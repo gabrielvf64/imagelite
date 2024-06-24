@@ -1,19 +1,19 @@
 package io.github.dougllasfps.imageliteapi.application.images;
 
 import io.github.dougllasfps.imageliteapi.domain.entity.Image;
-import io.github.dougllasfps.imageliteapi.domain.enums.ImageExtension;
 import io.github.dougllasfps.imageliteapi.domain.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -23,6 +23,7 @@ import java.util.List;
 public class ImagesController {
 
     private final ImageService service;
+    private final ImageMapper mapper;
 
     @PostMapping
     public ResponseEntity save(@RequestParam("file") MultipartFile file,
@@ -30,16 +31,21 @@ public class ImagesController {
                                @RequestParam("tags") List<String> tags) throws IOException {
         log.info("Recevied image: name: {}, size: {}", file.getOriginalFilename(), file.getSize());
 
-        Image image = Image.builder()
-                .name(name)
-                .tags(String.join(",", tags))
-                .size(file.getSize())
-                .extension(ImageExtension.valueOf(MediaType.valueOf(file.getContentType())))
-                .file(file.getBytes())
-                .build();
+        Image image = mapper.mapToImage(file, name, tags);
 
-        service.save(image);
+        Image savedImage = service.save(image);
 
-        return ResponseEntity.ok().build();
+        URI location = buildImageURL(savedImage);
+
+        return ResponseEntity.created(location).build();
+    }
+
+    private URI buildImageURL(Image image) {
+        String imagePath = "/" + image.getId();
+        return ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path(imagePath)
+                .build()
+                .toUri();
     }
 }
