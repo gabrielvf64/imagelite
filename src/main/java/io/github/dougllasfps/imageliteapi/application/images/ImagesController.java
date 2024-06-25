@@ -4,17 +4,17 @@ import io.github.dougllasfps.imageliteapi.domain.entity.Image;
 import io.github.dougllasfps.imageliteapi.domain.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -38,6 +38,25 @@ public class ImagesController {
         URI location = buildImageURL(savedImage);
 
         return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String id) {
+        Optional<Image> optionalImage = service.getById(id);
+
+        if (optionalImage.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Image image = optionalImage.get();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(image.getExtension().getMediaType());
+        headers.setContentLength(image.getSize());
+        headers.setContentDispositionFormData("inline; filename=\"" + image.getFileNameWithFileExtension() + "\"", image.getFileNameWithFileExtension());
+
+        return new ResponseEntity<>(image.getFile(), headers, HttpStatus.OK);
+
     }
 
     private URI buildImageURL(Image image) {

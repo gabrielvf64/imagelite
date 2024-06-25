@@ -44,4 +44,8 @@ public class Image {
     @Lob
     @Column
     private byte[] file;
+
+    public String getFileNameWithFileExtension() {
+        return getName().concat(".").concat(getExtension().name());
+    }
 }
