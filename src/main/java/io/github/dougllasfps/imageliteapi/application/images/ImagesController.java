@@ -1,6 +1,7 @@
 package io.github.dougllasfps.imageliteapi.application.images;
 
 import io.github.dougllasfps.imageliteapi.domain.entity.Image;
+import io.github.dougllasfps.imageliteapi.domain.enums.ImageExtension;
 import io.github.dougllasfps.imageliteapi.domain.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -56,7 +58,23 @@ public class ImagesController {
         headers.setContentDispositionFormData("inline; filename=\"" + image.getFileNameWithFileExtension() + "\"", image.getFileNameWithFileExtension());
 
         return new ResponseEntity<>(image.getFile(), headers, HttpStatus.OK);
+    }
 
+    // localhost:8080/v1/images?extension=PNG&query=Natu
+    @GetMapping
+    public ResponseEntity<List<ImageDTO>> search(
+            @RequestParam(value = "extension", required = false) String extension,
+            @RequestParam(value = "query", required = false) String query) {
+
+        List<Image> result = service.search(ImageExtension.valueOf(extension), query);
+
+        // convert all images to imageDTO
+        List<ImageDTO> imageDTOList = result.stream().map(image -> {
+            URI uri = buildImageURL(image);
+            return mapper.imageToDTO(image, uri.toString());
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(imageDTOList);
     }
 
     private URI buildImageURL(Image image) {
