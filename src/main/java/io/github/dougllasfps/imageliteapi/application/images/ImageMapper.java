@@ -22,7 +22,7 @@ public class ImageMapper {
                 .build();
     }
 
-    private ImageDTO imageToDTO(Image image, String url) {
+    public ImageDTO imageToDTO(Image image, String url) {
         return ImageDTO.builder()
                 .url(url)
                 .name(image.getName())
