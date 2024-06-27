@@ -23,4 +23,11 @@ public enum ImageExtension {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid media type"));
     }
+
+    public static ImageExtension ofName(String name) {
+        return Arrays.stream(values())
+                .filter(ie -> ie.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(null);
+    }
 }
