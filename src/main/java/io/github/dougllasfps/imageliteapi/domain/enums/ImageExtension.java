@@ -28,6 +28,6 @@ public enum ImageExtension {
         return Arrays.stream(values())
                 .filter(ie -> ie.name().equalsIgnoreCase(name))
                 .findFirst()
-                .orElseThrow(null);
+                .orElse(null);
     }
 }
