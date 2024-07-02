@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 
 public interface UserRepository extends JpaRepository<User, String>, JpaSpecificationExecutor<Image> {
+
+    User findByEmail(String email);
 }
