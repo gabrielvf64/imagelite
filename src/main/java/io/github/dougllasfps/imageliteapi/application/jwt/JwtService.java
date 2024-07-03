@@ -17,14 +17,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private SecretKeyGenerator secretKeyGenerator;
+    private final SecretKeyGenerator secretKeyGenerator;
 
     public AccessToken generateAccessToken(User user) {
         SecretKey key = secretKeyGenerator.getKey();
         Date expirationDate = generateExpirationDate();
         Map<String, Object> claims = generateTokenClaims(user);
 
-        String token = Jwts.builder()
+        String token = Jwts
+                .builder()
                 .signWith(key)
                 .subject(user.getEmail())
                 .expiration(expirationDate)
